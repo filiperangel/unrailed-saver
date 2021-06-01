@@ -14,6 +14,7 @@ namespace unrailedSaver
     public partial class Form1 : Form
     {
         private string gameSavePath = "";
+        private string language = "";
         private bool isRestoring = false;
         private static System.IO.FileSystemWatcher m_Watcher;
         public Form1()
@@ -29,11 +30,20 @@ namespace unrailedSaver
             {
                 try
                 {
-                    StreamWriter sw = new StreamWriter(@".\config.txt", true, Encoding.ASCII);
+                    //StreamWriter sw = new StreamWriter(@".\config.txt", true, Encoding.ASCII);
                     gameSavePath = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%") + @"\AppData\Local\Daedalic Entertainment GmbH\Unrailed\SaveGames\";
-                    sw.Write(gameSavePath);
+                    //sw.WriteLine(gameSavePath);
+                    if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName.Equals("pt"))
+                    {
+                        language = "pt";
+                    }
+                    else
+                    {
+                        language = "en";
+                    }
+                    //sw.Write(language);
 
-                    sw.Close();
+                    //sw.Close();
                 }
                 catch (Exception e)
                 {
@@ -48,6 +58,15 @@ namespace unrailedSaver
             if (lines != null)
             {
                 gameSavePath = lines[0];
+                language = lines[1];
+            }
+
+            if (language.Equals("pt"))
+            {
+                comboLanguage.SelectedIndex = 0;
+            } else
+            {
+                comboLanguage.SelectedIndex = 1;
             }
 
             m_Watcher = new System.IO.FileSystemWatcher();
@@ -99,6 +118,50 @@ namespace unrailedSaver
             {
                 MessageBox.Show(fbd.SelectedPath);
             }
+        }
+
+        private void comboLanguage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboLanguage.SelectedIndex == 0)
+            {
+                language = "pt";
+                this.changeLanguage("pt");
+            } else
+            {
+                language = "en";
+                this.changeLanguage("en");
+            }
+        }
+
+        private void changeLanguage(string language)
+        {
+            if (language.Equals("pt"))
+            {
+                restoreLastSaveBtn.Text = "Restaurar Ultimo Save";
+                selectFolderBtn.Text = "Selecionar Pasta do Jogo";
+                helpBtn.Text = "Ajuda";
+                lblLanguage.Text = "Idioma";
+            } else
+            {
+                restoreLastSaveBtn.Text = "Restore Last Save";
+                selectFolderBtn.Text = "Select Game Folder";
+                helpBtn.Text = "Help";
+                lblLanguage.Text = "Language";
+            }
+            saveConfigFile();
+        }
+
+        private void saveConfigFile()
+        {
+            StreamWriter sw = new StreamWriter(@".\config.txt", false, Encoding.ASCII);
+            sw.WriteLine(gameSavePath);
+            sw.Write(language);
+            sw.Close();
+        }
+
+        private void helpBtn_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start(@"https://github.com/filiperangel/unrailed-saver#readme");
         }
     }
 }
